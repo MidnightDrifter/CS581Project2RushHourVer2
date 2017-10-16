@@ -47,10 +47,55 @@ public:
 	//My stuff
 	int parentIndex = 0; //index to parent RushHour object
 	int treeDepth = 0;  //Depth in the tree--self explanatory
-	unsigned numCars = 0;  //Number of cars in the parking lot
+	int numMoves = 0;  //How many moves it took to get here
+	unsigned numCars = 0;  //hNumber of cars in the parking lot
 	std::tuple<unsigned, Direction, unsigned> moveToGetHere;  //The move used to get to this board state
 
 
+	RushHour(const RushHour& other) : height(other.height), width(other.width), parking_lot(NULL), exit_direction(other.exit_direction), car(other.car), filename(other.filename), parentIndex(other.parentIndex), treeDepth(other.treeDepth), numMoves(other.numMoves), numCars(other.numCars), moveToGetHere(other.moveToGetHere)
+	{
+		unsigned * parking_lot_data = new unsigned[height*width];
+		for (unsigned i = 0; i < height; i++)
+
+			parking_lot = new unsigned*[height];
+		for (unsigned i = 0; i < height; ++i) {
+			parking_lot[i] = parking_lot_data + i*width;
+			for (unsigned j = 0; j < width; j++)
+			{
+				parking_lot[i][j] = other.parking_lot[i][j];
+			}
+		}
+	}
+
+
+
+	bool operator==(const RushHour& other)
+	{
+		for(unsigned i=0;i<height;i++)
+		{
+			for (unsigned j = 0; j < width; j++)
+			{
+				if(parking_lot[i][j] != other.parking_lot[i][j])
+				{
+					return false;
+				}
+			}
+		}
+	
+		return true;
+	}
+
+	bool isValidIndex(int x, int y)
+	{
+		return (x > height || x<0 || y>width || y < 0);
+	}
+
+
+
+
+
+	bool operator<(const RushHour& other) { return numMoves < other.numMoves; }
+	bool operator>(const RushHour& other) { return numMoves > other.numMoves; }
 
 
 	//public:
@@ -61,7 +106,7 @@ public:
 
 	//RushHour( std::string const&  filename );
 	~RushHour();
-	void makeMove(std::tuple< unsigned, Direction, unsigned > move);
+	bool makeMove(std::tuple< unsigned, Direction, unsigned > move);
 	std::vector< std::tuple<unsigned, Direction, unsigned> > Solve()
 	{
 		return SolveRushHour(filename);

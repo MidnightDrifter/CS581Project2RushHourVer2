@@ -5,6 +5,9 @@
 #include <vector>
 #include <tuple>
 #include <set>
+#include <stack>
+#include <queue>
+#include <functional>
 #include "rushhour.h"
 
 // Keep this
@@ -231,7 +234,7 @@ RushHour::RushHour( std::string const& filename) : filename(filename)
 //
 
 //                                move = car,    direction, num positions
-void RushHour::makeMove(std::tuple< unsigned, Direction, unsigned > move)
+bool RushHour::makeMove(std::tuple< unsigned, Direction, unsigned > move)  //Returns TRUE if the move went through without a hitch
 {
 	int d = std::get<1>(move); // convert direction to int
 	int di = (d - 1)*((3 - d) % 2);    // see comment before function
@@ -251,15 +254,704 @@ void RushHour::makeMove(std::tuple< unsigned, Direction, unsigned > move)
 					// check if legal
 					if (i + di >= height && j + dj >= width) {
 						throw("Car moved outside of parking lot");
-						return;
+						parking_lot[i][j] = car;  //Reset car back to where it should be
+						return false;
 					}
 					if (parking_lot[i + di][j + dj] > 0) {
 						throw("Car moved on top of another car");
-						return;
+						parking_lot[i][j] = car;   //Reset car back to where it should be
+						return false;
 					}
 					parking_lot[i + di][j + dj] = car;
 				}
 			}
 		}
 	}
+
+	return true;
+}
+
+
+std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHour(const std::string& filename)  //DFS
+{
+	std::vector<RushHour> holder;
+	std::stack<RushHour> openList;
+	std::vector<RushHour> closedList;
+	std::vector<std::tuple<unsigned, Direction, unsigned>> soln;
+	RushHour startingState(filename);
+
+
+	openList.push(startingState);
+	holder.push_back(startingState);
+
+	//unsigned depth = 1;
+
+	for (unsigned depth = 1; true; depth++)
+	{
+		//	unsigned childDepth = 1;
+
+		while (!openList.empty())
+		{
+			unsigned pIndex = holder.size() - 1;
+			RushHour parent(openList.top());
+			openList.pop();
+			//if(parent.treeDepth)
+
+
+
+			if (parent.IsSolved())
+			{
+
+				//Loop back through and get solution
+				while(parent.parentIndex != -1)
+				{
+					soln.push_back(parent.moveToGetHere);
+					parent = holder[parent.parentIndex];
+				}
+				return soln;
+
+			}
+
+
+
+
+
+
+
+			else
+			{
+				if(parent.treeDepth<depth)
+				{
+				for (unsigned i = 1; i < startingState.numCars; i++)
+				{
+					//For each car, spawn its children
+					Orientation orientation;
+					unsigned indexX, indexY;  //Won't know if this is the LEFTMOST index or the TOPMOST index until after we make the check
+
+					//Look through parking lot to determine particular car's orientation
+					for (unsigned x = 0; x < startingState.height; x++)
+					{
+						for (unsigned y = 0; x < startingState.width; y++)
+						{
+							if (startingState.isValidIndex(x, y) && startingState.parking_lot[x][y] == i)
+							{
+								indexX = x;
+								indexY = y;
+								if (startingState.isValidIndex(x + 1, y) && startingState.parking_lot[x + 1][y] == i)  //Check that car is vertical
+								{
+									orientation = vertical;
+								}
+								else
+								{
+									orientation = horisontal;
+								}
+
+								x = startingState.height;
+								y = startingState.width;
+							}
+						}
+					}
+
+
+					if (orientation = vertical)  //Push back children trying vertical moves
+					{
+						RushHour childU(parent), childD(parent);
+						childU.treeDepth++;
+						childU.parentIndex = pIndex;
+						childU.parentIndex = pIndex;
+						childD.treeDepth++;
+						unsigned botIndex = indexX;
+						childU.numMoves++;
+						childD.numMoves++;
+
+
+
+
+						//car, direction, #positions moved
+						for (unsigned q = indexX; q < startingState.height; q++)
+						{
+							if (childU.parking_lot[q][indexY] == childU.car)
+							{
+								botIndex = q;
+							}
+						}
+
+						//Push back all possible down, up moves for this car
+
+						for (unsigned q = botIndex; q < startingState.height; q++)
+						{
+							if (childU.makeMove(std::tuple<unsigned, Direction, unsigned>(i, up, startingState.height - q)))//If the move goes through, it'll return TRUE
+							{
+								childU.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, up, startingState.height - q);
+								
+								bool isOnClosedList = false;
+
+								for (auto it = closedList.begin(); it != closedList.end(); it++)
+								{
+									if (*it == childU)
+									{
+										isOnClosedList = true;
+										it = closedList.end()-1;
+									}
+								}
+
+
+
+
+
+
+								if (!isOnClosedList)
+								{
+									holder.push_back(childU);
+									openList.push(childU);
+								}
+							
+							//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+								childU = childD;
+							}
+						}
+
+						childU = childD;
+						//childD = childU;
+
+
+
+						for (unsigned q = 1; q < indexX; q++)   //botIndex is the bottom-most index, so indexX is the topmost
+						{
+							if (childD.makeMove(std::tuple<unsigned, Direction, unsigned>(i, down, q)))
+							{
+
+
+								childD.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, down,  q);
+
+								bool isOnClosedList = false;
+
+								for (auto it = closedList.begin(); it != closedList.end(); it++)
+								{
+									if (*it == childD)
+									{
+										isOnClosedList = true;
+										it = closedList.end() - 1;
+									}
+								}
+
+
+
+
+
+
+								if (!isOnClosedList)
+								{
+									holder.push_back(childD);
+									openList.push(childD);
+								}
+
+								//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+								childU = childD;
+
+
+
+
+							}
+
+						}
+
+
+
+
+
+					}
+
+					else
+					{
+						RushHour childL(parent), childR(parent);
+						childL.treeDepth++;
+						childL.parentIndex = pIndex;
+						childR.parentIndex = pIndex;
+						childR.treeDepth++;
+						unsigned rightIndex = indexY;
+						childR.numMoves++;
+						childL.numMoves++;
+
+
+
+						//car, direction, #positions moved
+						for (unsigned q = indexY; q < startingState.height; q++)
+						{
+							if (childL.parking_lot[indexX][q] == childL.car)
+							{
+								rightIndex = q;
+							}
+						}
+
+
+						//Push back all possible left, right moves for this car
+
+
+
+
+
+
+
+
+
+						for (unsigned q = rightIndex; q < startingState.width; q++)
+						{
+							if (childR.makeMove(std::tuple<unsigned, Direction, unsigned>(i, right, startingState.width - q)))//If the move goes through, it'll return TRUE
+							{
+								childR.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, right, startingState.width - q);
+
+								bool isOnClosedList = false;
+
+								for (auto it = closedList.begin(); it != closedList.end(); it++)
+								{
+									if (*it == childR)
+									{
+										isOnClosedList = true;
+										it = closedList.end() - 1;
+									}
+								}
+
+
+
+
+
+
+								if (!isOnClosedList)
+								{
+									holder.push_back(childR);
+									openList.push(childR);
+								}
+
+								//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+								childR = childL;
+							}
+						}
+
+						childR = childL;
+						//childD = childU;
+
+
+
+						for (unsigned q = 1; q < indexY; q++)   //botIndex is the bottom-most index, so indexX is the topmost
+						{
+							if (childL.makeMove(std::tuple<unsigned, Direction, unsigned>(i, left, q)))
+							{
+
+
+								childL.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, left, q);
+
+								bool isOnClosedList = false;
+
+								for (auto it = closedList.begin(); it != closedList.end(); it++)
+								{
+									if (*it == childL)
+									{
+										isOnClosedList = true;
+										it = closedList.end() - 1;
+									}
+								}
+
+
+
+
+
+
+								if (!isOnClosedList)
+								{
+									holder.push_back(childL);
+									openList.push(childL);
+								}
+
+								//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+								childL = childR;
+
+
+
+
+							}
+
+						}
+
+
+						//Children should now be pushed onto openList--now to push parent onto closed list
+
+
+						closedList.push_back(parent);
+
+
+
+
+
+
+
+
+
+
+
+
+
+					}
+
+				}
+
+			}
+
+		}
+	}
+
+	}
+
+
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHourOptimally(const std::string& filename)  //BFS
+{
+	std::vector<RushHour> holder;
+	std::priority_queue<RushHour, std::vector<RushHour>,std::greater<RushHour>> openList;
+	std::vector<RushHour> closedList;
+	std::vector<std::tuple<unsigned, Direction, unsigned>> soln;
+		
+
+
+	RushHour startingState(filename);
+
+
+	openList.push(startingState);
+	holder.push_back(startingState);
+
+	//unsigned depth = 1;
+
+
+		//	unsigned childDepth = 1;
+
+		while (!openList.empty())
+		{
+			unsigned pIndex = holder.size() - 1;
+			RushHour parent(openList.top());
+			openList.pop();
+			//if(parent.treeDepth)
+
+
+
+			if (parent.IsSolved())
+			{
+
+				//Loop back through and get solution
+				while (parent.parentIndex != -1)
+				{
+					soln.push_back(parent.moveToGetHere);
+					parent = holder[parent.parentIndex];
+				}
+				return soln;
+
+			}
+
+
+
+
+
+
+
+			else
+			{
+				
+					for (unsigned i = 1; i < startingState.numCars; i++)
+					{
+						//For each car, spawn its children
+						Orientation orientation;
+						unsigned indexX, indexY;  //Won't know if this is the LEFTMOST index or the TOPMOST index until after we make the check
+
+												  //Look through parking lot to determine particular car's orientation
+						for (unsigned x = 0; x < startingState.height; x++)
+						{
+							for (unsigned y = 0; x < startingState.width; y++)
+							{
+								if (startingState.isValidIndex(x, y) && startingState.parking_lot[x][y] == i)
+								{
+									indexX = x;
+									indexY = y;
+									if (startingState.isValidIndex(x + 1, y) && startingState.parking_lot[x + 1][y] == i)  //Check that car is vertical
+									{
+										orientation = vertical;
+									}
+									else
+									{
+										orientation = horisontal;
+									}
+
+									x = startingState.height;
+									y = startingState.width;
+								}
+							}
+						}
+
+
+						if (orientation = vertical)  //Push back children trying vertical moves
+						{
+							RushHour childU(parent), childD(parent);
+							childU.treeDepth++;
+							childU.parentIndex = pIndex;
+							childU.parentIndex = pIndex;
+							childD.treeDepth++;
+							unsigned botIndex = indexX;
+							childU.numMoves++;
+							childD.numMoves++;
+
+
+
+
+							//car, direction, #positions moved
+							for (unsigned q = indexX; q < startingState.height; q++)
+							{
+								if (childU.parking_lot[q][indexY] == childU.car)
+								{
+									botIndex = q;
+								}
+							}
+
+							//Push back all possible down, up moves for this car
+
+							for (unsigned q = botIndex; q < startingState.height; q++)
+							{
+								if (childU.makeMove(std::tuple<unsigned, Direction, unsigned>(i, up, startingState.height - q)))//If the move goes through, it'll return TRUE
+								{
+									childU.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, up, startingState.height - q);
+
+									bool isOnClosedList = false;
+
+									for (auto it = closedList.begin(); it != closedList.end(); it++)
+									{
+										if (*it == childU)
+										{
+											isOnClosedList = true;
+											it = closedList.end() - 1;
+										}
+									}
+
+
+
+
+
+
+									if (!isOnClosedList)
+									{
+										holder.push_back(childU);
+										openList.push(childU);
+									}
+
+									//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+									childU = childD;
+								}
+							}
+
+							childU = childD;
+							//childD = childU;
+
+
+
+							for (unsigned q = 1; q < indexX; q++)   //botIndex is the bottom-most index, so indexX is the topmost
+							{
+								if (childD.makeMove(std::tuple<unsigned, Direction, unsigned>(i, down, q)))
+								{
+
+
+									childD.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, down, q);
+
+									bool isOnClosedList = false;
+
+									for (auto it = closedList.begin(); it != closedList.end(); it++)
+									{
+										if (*it == childD)
+										{
+											isOnClosedList = true;
+											it = closedList.end() - 1;
+										}
+									}
+
+
+
+
+
+
+									if (!isOnClosedList)
+									{
+										holder.push_back(childD);
+										openList.push(childD);
+									}
+
+									//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+									childU = childD;
+
+
+
+
+								}
+
+							}
+
+
+
+
+
+						}
+
+						else
+						{
+							RushHour childL(parent), childR(parent);
+							childL.treeDepth++;
+							childL.parentIndex = pIndex;
+							childR.parentIndex = pIndex;
+							childR.treeDepth++;
+							unsigned rightIndex = indexY;
+							childR.numMoves++;
+							childL.numMoves++;
+
+
+
+							//car, direction, #positions moved
+							for (unsigned q = indexY; q < startingState.height; q++)
+							{
+								if (childL.parking_lot[indexX][q] == childL.car)
+								{
+									rightIndex = q;
+								}
+							}
+
+
+							//Push back all possible left, right moves for this car
+
+
+
+
+
+
+
+
+
+							for (unsigned q = rightIndex; q < startingState.width; q++)
+							{
+								if (childR.makeMove(std::tuple<unsigned, Direction, unsigned>(i, right, startingState.width - q)))//If the move goes through, it'll return TRUE
+								{
+									childR.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, right, startingState.width - q);
+
+									bool isOnClosedList = false;
+
+									for (auto it = closedList.begin(); it != closedList.end(); it++)
+									{
+										if (*it == childR)
+										{
+											isOnClosedList = true;
+											it = closedList.end() - 1;
+										}
+									}
+
+
+
+
+
+
+									if (!isOnClosedList)
+									{
+										holder.push_back(childR);
+										openList.push(childR);
+									}
+
+									//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+									childR = childL;
+								}
+							}
+
+							childR = childL;
+							//childD = childU;
+
+
+
+							for (unsigned q = 1; q < indexY; q++)   //botIndex is the bottom-most index, so indexX is the topmost
+							{
+								if (childL.makeMove(std::tuple<unsigned, Direction, unsigned>(i, left, q)))
+								{
+
+
+									childL.moveToGetHere = std::tuple<unsigned, Direction, unsigned>(i, left, q);
+
+									bool isOnClosedList = false;
+
+									for (auto it = closedList.begin(); it != closedList.end(); it++)
+									{
+										if (*it == childL)
+										{
+											isOnClosedList = true;
+											it = closedList.end() - 1;
+										}
+									}
+
+
+
+
+
+
+									if (!isOnClosedList)
+									{
+										holder.push_back(childL);
+										openList.push(childL);
+									}
+
+									//If the move went through, we'll need to reset this child back to the original board state before performing more moves
+									childL = childR;
+
+
+
+
+								}
+
+							}
+
+
+							//Children should now be pushed onto openList--now to push parent onto closed list
+
+
+							closedList.push_back(parent);
+
+
+
+
+
+
+
+
+
+
+
+
+
+						}
+
+					}
+
+				}
+
+			
+		
+
+	}
+
+		
+		
+		
 }
