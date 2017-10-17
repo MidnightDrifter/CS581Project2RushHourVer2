@@ -68,16 +68,23 @@ void RushHour::Print(std::string const& filename_out)
 
 
 RushHour::~RushHour()
-{
+{/*
 	for (unsigned i = 0; i < height; i++)
 	{
 		if (parking_lot[i])
 		{
-			delete[] parking_lot[i];
+			delete parking_lot[i];
 		}
 	}
 	delete[] parking_lot;
-}
+
+	*/
+
+	delete[] parking_lot[0];
+	delete[] parking_lot;
+	
+	
+	}
 
 
 

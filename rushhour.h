@@ -50,22 +50,26 @@ public:
 
 	RushHour(const RushHour& other) : height(other.height), width(other.width), parking_lot(NULL), exit_direction(other.exit_direction), car(other.car), filename(other.filename), parentIndex(other.parentIndex), treeDepth(other.treeDepth), numMoves(other.numMoves), numCars(other.numCars), moveToGetHere(other.moveToGetHere)
 	{
-		/*
+		
 		unsigned * parking_lot_data = new unsigned[height*width];
-		for (unsigned i = 0; i < height; i++)
-
-			parking_lot = new unsigned*[height];
-		for (unsigned i = 0; i < height; ++i) {
+		parking_lot = new unsigned*[height];
+		for (unsigned i = 0; i<height; ++i) {
 			parking_lot[i] = parking_lot_data + i*width;
+		}
+
+
+
+
+		for (unsigned i = 0; i < height; ++i) {
 			for (unsigned j = 0; j < width; j++)
 			{
 				parking_lot[i][j] = other.parking_lot[i][j];
 			}
 		}
 
-		*/
+		
 
-
+		/*
 		parking_lot = new unsigned*[height];
 			for (unsigned i = 0; i < width; i++)
 			{
@@ -81,7 +85,7 @@ public:
 				}
 			}
 
-
+			*/
 
 	}
 
