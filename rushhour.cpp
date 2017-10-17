@@ -12,20 +12,20 @@
 
 
 
-
-// Keep this
-////////////////////////////////////////////////////////////////////////////////
-// global functions
-std::vector< std::tuple<unsigned, Direction, unsigned> >
-SolveRushHour(std::string const& filename)   //DFS
-{
-	RushHour r(filename);  return r.Solve();
-}
-std::vector< std::tuple<unsigned, Direction, unsigned> >
-SolveRushHourOptimally(std::string const& filename)    //BFS
-{
-	RushHour r(filename); return r.SolveOptimally();
-}
+//
+//// Keep this
+//////////////////////////////////////////////////////////////////////////////////
+//// global functions
+//std::vector< std::tuple<unsigned, Direction, unsigned> >
+//SolveRushHour(std::string const& filename)   //DFS
+//{
+//	RushHour r(filename);  return r.Solve();
+//}
+//std::vector< std::tuple<unsigned, Direction, unsigned> >
+//SolveRushHourOptimally(std::string const& filename)    //BFS
+//{
+//	RushHour r(filename); return r.SolveOptimally();
+//}
 
 
 
@@ -69,7 +69,13 @@ void RushHour::Print(std::string const& filename_out)
 
 RushHour::~RushHour()
 {
-	delete[] parking_lot[0];
+	for (unsigned i = 0; i < height; i++)
+	{
+		if (parking_lot[i])
+		{
+			delete[] parking_lot[i];
+		}
+	}
 	delete[] parking_lot;
 }
 
@@ -317,13 +323,13 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHour(const std
 
 	//unsigned depth = 1;
 
-	for (unsigned depth = 1; true; depth++)
+	for (int depth = 1; true; depth++)
 	{
 		//	unsigned childDepth = 1;
 
 		while (!openList.empty())
 		{
-			unsigned pIndex = holder.size() - 1;
+			int pIndex = static_cast<int>( holder.size() - 1);
 			RushHour parent(openList.top());
 			openList.pop();
 			//if(parent.treeDepth)
@@ -356,8 +362,9 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHour(const std
 				for (unsigned i = 1; i < startingState.numCars; i++)
 				{
 					//For each car, spawn its children
-					Orientation orientation;
-					unsigned indexX, indexY;  //Won't know if this is the LEFTMOST index or the TOPMOST index until after we make the check
+					Orientation orientation=horisontal;
+					unsigned indexX = 0;
+					unsigned indexY = 0;  //Won't know if this is the LEFTMOST index or the TOPMOST index until after we make the check
 
 					//Look through parking lot to determine particular car's orientation
 					for (unsigned x = 0; x < startingState.height; x++)
@@ -384,7 +391,7 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHour(const std
 					}
 
 
-					if (orientation = vertical)  //Push back children trying vertical moves
+					if (orientation == vertical)  //Push back children trying vertical moves
 					{
 						RushHour childU(parent), childD(parent);
 						childU.treeDepth++;
@@ -673,7 +680,7 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHourOptimally(
 
 		while (!openList.empty())
 		{
-			unsigned pIndex = holder.size() - 1;
+			int pIndex =  static_cast<int>(holder.size() - 1);
 			RushHour parent(openList.top());
 			openList.pop();
 			//if(parent.treeDepth)
@@ -705,8 +712,8 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHourOptimally(
 					for (unsigned i = 1; i < startingState.numCars; i++)
 					{
 						//For each car, spawn its children
-						Orientation orientation;
-						unsigned indexX, indexY;  //Won't know if this is the LEFTMOST index or the TOPMOST index until after we make the check
+						Orientation orientation = horisontal;
+						unsigned indexX=0, indexY=0;  //Won't know if this is the LEFTMOST index or the TOPMOST index until after we make the check
 
 												  //Look through parking lot to determine particular car's orientation
 						for (unsigned x = 0; x < startingState.height; x++)
@@ -733,7 +740,7 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHourOptimally(
 						}
 
 
-						if (orientation = vertical)  //Push back children trying vertical moves
+						if (orientation == vertical)  //Push back children trying vertical moves
 						{
 							RushHour childU(parent), childD(parent);
 							childU.treeDepth++;
@@ -983,6 +990,6 @@ std::vector< std::tuple<unsigned, Direction, unsigned> > SolveRushHourOptimally(
 	}
 
 		
-		
+	return soln;
 		
 }

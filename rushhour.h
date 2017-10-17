@@ -50,6 +50,7 @@ public:
 
 	RushHour(const RushHour& other) : height(other.height), width(other.width), parking_lot(NULL), exit_direction(other.exit_direction), car(other.car), filename(other.filename), parentIndex(other.parentIndex), treeDepth(other.treeDepth), numMoves(other.numMoves), numCars(other.numCars), moveToGetHere(other.moveToGetHere)
 	{
+		/*
 		unsigned * parking_lot_data = new unsigned[height*width];
 		for (unsigned i = 0; i < height; i++)
 
@@ -61,6 +62,27 @@ public:
 				parking_lot[i][j] = other.parking_lot[i][j];
 			}
 		}
+
+		*/
+
+
+		parking_lot = new unsigned*[height];
+			for (unsigned i = 0; i < width; i++)
+			{
+				parking_lot[i] = new unsigned[width];
+			}
+
+
+			for (unsigned a = 0; a < height; a++)
+			{
+				for (unsigned b = 0; b < width; b++)
+				{
+					parking_lot[a][b] = other.parking_lot[a][b];
+				}
+			}
+
+
+
 	}
 
 
@@ -83,15 +105,15 @@ public:
 
 	bool isValidIndex(int x, int y)
 	{
-		return (x > height || x<0 || y>width || y < 0);
+		return (x > static_cast<int>(height) || x<0 || y>static_cast<int>(width) || y < 0);
 	}
 
 
 
 
 
-	bool operator<(const RushHour& other) { return numMoves < other.numMoves; }
-	bool operator>(const RushHour& other) { return numMoves > other.numMoves; }
+	bool operator<(const RushHour& other) const { return numMoves < other.numMoves; }
+	bool operator>(const RushHour& other) const { return numMoves > other.numMoves; }
 
 
 	//public:
