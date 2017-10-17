@@ -13,20 +13,16 @@ enum Orientation { horisontal, vertical};
 // Keep this
 std::ostream& operator<<( std::ostream& os, Direction const& d );
 
-// Keep this
-////////////////////////////////////////////////////////////////////////////////
-// global functions
-std::vector< std::tuple<unsigned, Direction, unsigned> > 
-SolveRushHour( std::string const& filename );   //DFS
-
-std::vector< std::tuple<unsigned, Direction, unsigned> > 
-SolveRushHourOptimally( std::string const& filename );    //BFS
 
 ////////////////////////////////////////////////////////////////////////////////
 // your stuff
 ////////////////////////////////////////////////////////////////////////////////
 
+std::vector< std::tuple<unsigned, Direction, unsigned> >
+SolveRushHour(std::string const& filename);
 
+std::vector< std::tuple<unsigned, Direction, unsigned> >
+SolveRushHourOptimally(std::string const& filename);    //BFS
 
 
 
@@ -55,7 +51,7 @@ public:
 
 	//public:
 	//friend std::ostream& operator<<(std::ostream& os, RushHour const& pl);
-	void Print(std::string const& filename_out);
+	//void Print(std::string const& filename_out);
 	unsigned const& Car() const { return car; }
 	Direction const& Dir() const { return exit_direction; }
 
@@ -84,12 +80,12 @@ public:
 
 	
 
-	int CheckBrief(std::vector< std::tuple<unsigned, Direction, unsigned> > const& sol);
+	//int CheckBrief(std::vector< std::tuple<unsigned, Direction, unsigned> > const& sol);
 
 
 
 
-	void Print(std::string const& filename_out);
+	//void Print(std::string const& filename_out);
 
 
 
@@ -103,15 +99,27 @@ public:
 
 
 
+//
+//
+//
+//class ParkingLotSolver {
+//    private:
+//    
+//    public:
+//        std::vector< std::tuple<unsigned, Direction, unsigned> > Solve();
+//        std::vector< std::tuple<unsigned, Direction, unsigned> > SolveOptimally();
+//};
 
 
 
-class ParkingLotSolver {
-    private:
-    
-    public:
-        std::vector< std::tuple<unsigned, Direction, unsigned> > Solve();
-        std::vector< std::tuple<unsigned, Direction, unsigned> > SolveOptimally();
-};
+
+
+
+
+
+
+
+
+
 
 #endif

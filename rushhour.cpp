@@ -7,6 +7,36 @@
 #include <set>
 #include "rushhour.h"
 
+
+
+
+// Keep this
+////////////////////////////////////////////////////////////////////////////////
+// global functions
+std::vector< std::tuple<unsigned, Direction, unsigned> >
+SolveRushHour(std::string const& filename)   //DFS
+{
+	RushHour r(filename);  return r.Solve();
+}
+std::vector< std::tuple<unsigned, Direction, unsigned> >
+SolveRushHourOptimally(std::string const& filename)    //BFS
+{
+	RushHour r(filename); return r.SolveOptimally();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Keep this
 std::ostream& operator<<( std::ostream& os, Direction const& d ) {
     switch ( d ) {
@@ -19,6 +49,7 @@ std::ostream& operator<<( std::ostream& os, Direction const& d ) {
     return os;
 }
 
+/*
 void RushHour::Print(std::string const& filename_out)
 {
 	std::ofstream os;
@@ -30,7 +61,7 @@ void RushHour::Print(std::string const& filename_out)
 	}
 	os << std::endl;
 }
-
+*/
 
 
 RushHour::~RushHour()
